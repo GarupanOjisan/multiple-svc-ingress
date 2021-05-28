@@ -1,0 +1,40 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: server-cert
+spec:
+  domains:
+    - service1.example.com
+    - service2.example.com
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: server-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "server-ip"
+    networking.gke.io/managed-certificates: "server-cert"
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  rules:
+  - host: service1.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: server-1
+            port:
+              number: 443
+  - host: service2.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: server-2
+            port:
+              number: 443
